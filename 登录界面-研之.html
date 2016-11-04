@@ -1,0 +1,204 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>注册界面-研之</title>
+<link rel="stylesheet" href="yanzhi-regist.css" type="text/css" /><
+/head>
+
+
+
+<body>
+<form action="" method="post" onsubmit="return eg.regCheck();">
+ <div class="constr">
+	<div class="regist-head">注册</div>
+    <div class="regist-body">
+    	<div class="regist-main">
+        	<div class="regist-group">
+            	<label class="regist-label"><span class="regist-star">*</span>用户昵称</label>
+                <div class="regist-cell">
+                	<input type="text" class="regist-input" id="userid">
+                </div>
+            </div> 
+            
+        	<div class="regist-group">
+            	<label class="regist-label"><span class="regist-star">*</span>登录邮箱</label>
+                <div class="regist-cell">
+                	<input type="email" class="regist-input" id="email" /><span class="regist-remark regist-warn">
+                    	<i class="icon-warn"></i>邮箱格式不准确（演示）
+                    </span>
+                </div>
+            </div>
+            
+            <div class="regist-group">
+            	<label class="regist-label"><span class="regist-star">*</span>登录密码</label>
+                <div class="regist-cell">
+                	<input type="password" class="regist-input" id="userpwd"/><span class="regist-remark">
+                    	请输入6-16位密码，区分大小写，不能使用空格
+                    </span>
+                </div>
+                <p>密码强度：<span class="tips" level="0"></span><span class="tips" level="1"></span><span class="tips" level="2"></span><span class="tips" level="3"></span></p>
+            </div>
+           <div class="regist-group">
+            	<label class="regist-label"><span class="regist-star">*</span>密码确认</label>
+                <div class="regist-cell">
+                	<input type="password" class="regist-input" id="userpwd2">
+                </div>
+            </div> 
+            
+            
+            
+            
+            <div class="regist-group">
+            	<label class="regist-label"><span class="regist-star">*</span>手机号码</label>
+                <div class="regist-cell">
+                	<input type="telephone" class="regist-input" id="userphone">
+                </div>
+            </div> 
+            
+            <div class="regist-group">
+            	<label class="regist-label"><span class="regist-star">*</span>验证码</label>
+                <div class="regist-cell">
+                	<input class="regist-input regist-code-input" id="registcode"><img src="http://img.mukewang.com/545308540001678401500040.jpg" />
+               </div>
+            </div> 
+            
+          <div class="regist-group">
+            	<label class="regist-label">&nbsp;</label>
+                <div class="regist-cell">
+                	<input type="checkbox" checked><label>我已阅读并同意<a href="##">研之协议</a>。</label>
+                    <p>
+                     <input type="submit" class="regist-btn" id="btn" value="立即注册"/>                   
+                    </p>
+      </div>
+            </div>
+         </div>
+       </div>
+       </div>
+</div>
+</div>
+ 
+ 
+</form>
+<script type="text/javascript">
+var eg={};
+//Solve the campatibility of IE
+/*
+输入密码：<input type="password" name="" id="userpwd"/>
+    确认密码:<input type="password" name="" id="userpwd2"/>
+    注册邮箱：<input type="text" name="" id="email"/>
+    <input type="submit" value="注册" id="regBtn"/>
+	*/
+/*eg.getElementsByClassName=function(className,element){
+	if(document.getElementsByClassName){
+		return (element||document).getElementsByClassName(calssName);
+	}
+	var children = (element||document).getElementsByTagName("*");
+	
+	var elements = new ArraY();
+	
+	for(var i=0;i<chidren.length;i++){
+		var child=children[i];
+		var className = child.className.split(' ');
+	}
+	for(var j=0;j<className.length;j++){
+		if(className[j]==className){
+			elements.push(child);
+			break;
+		}
+	}
+	return elements;
+};
+//the function to solve the campatibility of DOM listen给指定标签对象添加操作
+eg.addistener = function(target,type,handler){
+	if(target.addEventListener){
+		target.addEventListener(type,handler,false);
+	}
+	else if(target.attachEvent){
+		target.attachEvent("on"+target,handler);
+	}
+	else{
+		target["on"+target]=handler
+	}
+};*/
+		
+eg.$= function(id){
+	return document.getElementById(id);
+}
+eg.regCheck=function(){
+	var uid = eg.$("userid");
+	var upwd = eg.$("userpwd");
+	var upwd2 = eg.$("userpwd2");
+	
+	if(uid.value == ''){
+		alert("你的昵称不能为空！");
+		
+		return false;
+	}
+	if(upwd.value == ''){
+		alert("你的密码不能为空！");
+		
+		return false;
+	}
+	if(upwd2.value != upwd.value){
+		alert("你的两次密码输入有误！");
+		
+		return false;
+	}
+
+	//引入正则表达式检验邮箱
+	var email = eg.$("email")
+		if(!new RegExp("^[a-z\\d]+[\\w\\-\.]*@([a-z\\d]+[a-z\\d\\-}*\.)[a-z]{2,4}$","i").text(email.value)){
+			alert('please input the right email address!');
+			email.focus();//让输入框获得焦点
+			
+			return false;
+		}
+				
+	return ture;
+};
+//增加一些交互事件
+/*eg.addEvent = function(){
+	var ped = eg.$("userpwd");
+	eg.addEventListtener(pwd,"keyup",function(){
+		var lv=0;
+		if(/^\d{4,}$/.test(pwd.value)){
+			lv=10;
+		}else if(/^\w{4,}$/.test(pwd.value)){
+			lv=25;
+		}else if(/^[\d\w]{4,}$/.test(pwd.value)){
+			lv=50;
+		}else if(/^[\d\w~!@#$%\^&*\(\)\-{}\[\]=<>,\.\?\/]{4,}$/.test(pwd.value)){
+			lv=100;
+		}else if(pwd.value.length<6 && pwd.value.length>3){
+			lv=60;
+		}else if(pwd.value.length<4){
+			lv=0;
+		}
+			eg.$("pwdLv").style.width = Lv+"px";
+	});
+}
+
+eg.addEvent();
+
+eg.err=function(){
+	var el=eg.$("errnum");
+	var old= el.value;
+	el.value=parseInt(old)+1;
+	eg.lock();
+};*/
+
+/*eg.lock=function(){
+	var err=rg.$("errnum");
+	if(el.valie>2){
+		eg.$("regBtn").disabled=true;
+		eg.$("regUnlock").style.display="block";
+	}
+};*/
+/*eg.unlock=function(){
+	eg.$("regBtn").disabled = false;
+	eg.$("regUnlock").style.display ="none";
+}*/
+</script>        
+</body>
+</html>
