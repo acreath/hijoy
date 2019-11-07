@@ -21,5 +21,7 @@ def create_app(config_name):
     db.init_app(app)
 
     #稍后增加路由和自定义的错误页面
+    from app.main import main as main_blueprint
+    app.register_blueprint(main_blueprint)
 
     return app

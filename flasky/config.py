@@ -11,7 +11,9 @@ class Config:
 
     @staticmethod
     def init_app(app):
-        pass#这个作用需要再看看
+
+        pass
+        
 class DevelopmentConfig(Config): 
     DEBUG = True
     MAIL_SERVER = 'smtp.qq.com'
@@ -25,7 +27,7 @@ class DevelopmentConfig(Config):
 
 class TestingConfig(Config): 
     TESTING = True
-    SQLALCHEMY_DATABASE_URI = os.environ.get('TEST_DATABASE_URL') or \ 
+    SQLALCHEMY_DATABASE_URI = os.environ.get('TEST_DATABASE_URL') or \
         'mysql+pymysql://root:password@localhost:3306/flasky'
 
 class ProductionConfig(Config):
