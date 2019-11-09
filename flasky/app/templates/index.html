@@ -4,6 +4,8 @@
 {% block title %}Flasky{% endblock %}
 
 {% block page_content %} 
+
+<h1>
 Hello,
 <!-- 版本问题，使用 authenticated -->
 {% if current_user.is_authenticated %}
@@ -11,6 +13,7 @@ Hello,
 {% else %}
     Stranger 
 {% endif %}!
+</h1>
 
-{{ wtf.quick_form(form)}}    
+    
 {% endblock %}
