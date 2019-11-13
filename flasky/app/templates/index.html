@@ -6,14 +6,14 @@
 {% block page_content %} 
 
 <h1>
-Hello,
-<!-- 版本问题，使用 authenticated -->
-{% if current_user.is_authenticated %}
-    {{ current_user.username }} 
-{% else %}
-    Stranger 
-{% endif %}!
+    Hello,
+    <!-- 版本问题，使用 authenticated -->
+    {% if current_user.is_authenticated %}
+        {{ current_user.username }} 
+    {% else %}
+        Stranger 
+    {% endif %}!
 </h1>
 
-    
+  
 {% endblock %}
