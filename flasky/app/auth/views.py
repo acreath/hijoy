@@ -4,9 +4,10 @@ from flask_login import login_user, login_required, logout_user, UserMixin
 from ..models import User
 from .forms import LoginForm, RegistrationForm
 from .. import db
+from ..email import send_email
 
 #登入用户的逻辑
-@auth.route('/login', methods=['GET', 'POST'])
+@auth.route('/auth/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
     if form.validate_on_submit():
@@ -19,7 +20,7 @@ def login():
 
 
 #登出用户逻辑
-@auth.route('/logout')
+@auth.route('/auth/logout')
 @login_required
 def logout():
     logout_user()
@@ -29,15 +30,20 @@ def logout():
 
     
 #用户注册逻辑
-@auth.route('/register', methods=['GET','POST'])
+@auth.route('/auth/register', methods=['GET','POST'])
 def register():
     form = RegistrationForm()
     if form.validate_on_submit():
         user = User(email=form.email.data, username=form.username.data, password=form.password.data)
-        db.session.submit(user)
-        flash('You can now login')
-        return redirect(url_for('auth.login'))
-    return render_template('auth/login.html', form=form)
+        db.session.add(user)
+        db.session.commit()
+        token = user.generate_confirmation_token()
+        send_email(user.email, 'Confirm Your Account', 'auth/email/confirm', 
+                                user=user, token=token)
+
+        flash('A confirmation email has been sent to you by email.')
+        return redirect(url_for('main.index'))
+    return render_template('auth/register.html', form=form)
 
 
 @auth.route('/secret')
