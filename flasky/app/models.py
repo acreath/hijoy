@@ -51,7 +51,8 @@ class User(db.Model, UserMixin):
         except:
             return False
         if data.get('confirm') != self.id:
-            self.confirmed = True
+            return False
+        self.confirmed = True
         db.session.add(self)
         return True
 

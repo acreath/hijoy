@@ -4,7 +4,7 @@ from wtforms.validators import Required, Length, Email, Regexp, EqualTo
 from ..models import User
 from wtforms import ValidationError
 
-
+#用户登录表单
 class LoginForm(Form):
     email = StringField('Email', validators=[Required(), Length(1, 64), Email()])
     password = PasswordField('Password', validators=[Required()])
@@ -28,3 +28,13 @@ class RegistrationForm(Form):
     def validate_username(self, field):
         if User.query.filter_by(username=field.data).first():
             raise ValidationError('Username already in use.')
+
+#用户修改密码的表单
+class ChangepasswordForm(Form):
+    old_password = PasswordField('Old Password', validators=[Required()])
+    new_password = PasswordField('New_Password', validators=[Required(),EqualTo('password2', message='Passwords must match.')])
+    password2 = PasswordField('Confirm new password',
+                              validators=[Required()])
+    submit = SubmitField('submit')
+   
+    
