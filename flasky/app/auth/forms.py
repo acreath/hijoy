@@ -37,4 +37,16 @@ class ChangepasswordForm(Form):
                               validators=[Required()])
     submit = SubmitField('submit')
    
-    
+
+#用户重设密码表单1:填写邮箱
+class ResetPasswordRequestForm(Form):
+    email = StringField('Email', validators=[Required(), Length(1, 64),
+                                                Email()])
+                                
+    submit = SubmitField('Submit')
+
+#用户输入新密码的表单
+class ResetPasswordForm(Form):
+    new_password = PasswordField('New Password', validators=[Required(),EqualTo('password2', message='Passwords must match.')])
+    password2 = PasswordField('Confirm Password', validators=[Required()])
+    submit = SubmitField('Submit')

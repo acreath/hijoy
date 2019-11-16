@@ -2,7 +2,8 @@ from flask import render_template, redirect, request, url_for, flash
 from . import auth
 from flask_login import login_user, login_required, logout_user, UserMixin
 from ..models import User
-from .forms import LoginForm, RegistrationForm, ChangepasswordForm
+from .forms import LoginForm, RegistrationForm, ChangepasswordForm,\
+    ResetPasswordForm,ResetPasswordRequestForm
 from .. import db
 from ..email import send_email
 from flask_login import current_user
@@ -110,3 +111,38 @@ def changepassword():
         else:
             flash('Invalid password.')
     return render_template('auth/change_password.html',form=form)
+
+@auth.route('/auth/resetpassword', methods=['GET', 'POST'])
+def reset_password_req():
+    if not current_user.is_anonymous:
+        return redirect(url_for('main.index'))
+    form = ResetPasswordRequestForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(email = form.email.data).first()
+        if user is not None:
+            token = user.generate_reset_token()
+            send_email(user.email, 'Reset Your Password',
+                       'auth/email/reset_password', 
+                                user=user, token=token)
+
+            flash('A confirmation email has been sent to you by email.')
+            return redirect(url_for('auth.login'))
+        else:
+            flash('Invliad email')
+    return render_template('auth/reset_password.html', form=form)
+
+@auth.route('/auth/resetpassword/<token>', methods=['GET','POST'])
+def reset_password(token):
+    if not current_user.is_anonymous:
+        return redirect(url_for('main.index'))
+    form = ResetPasswordForm()
+    if form.validate_on_submit():
+        if User.reset_password(token, form.new_password.data):
+            db.session.commit()
+            flash('Your password has been updated.')
+            return redirect(url_for('auth.login'))
+        else:
+            return redirect(url_for('main.index'))
+    return render_template('auth/reset_password.html', form=form)
+        
+
