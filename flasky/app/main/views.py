@@ -5,6 +5,24 @@ from . import main
 from .forms import NameForm
 from .. import db
 from ..models import User
+from flask_login import login_required
+
+from ..decorators import admin_required, permission_required
+from ..models import Permission 
+##如何使用修饰器对权限进行检测
+
+@main.route('/admin')
+@login_required
+@admin_required
+def for_admins_only():
+    return "For administrators!"
+
+
+@main.route('/moderator')
+@login_required
+@permission_required(Permission.MODERATE_COMMENTS)
+def for_moderators_only():
+    return "For comment moderators!"
 
 @main.route('/', methods=['GET', 'POST'])
 def index():

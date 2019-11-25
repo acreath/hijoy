@@ -1,4 +1,5 @@
 {
+    
     "python.pythonPath": "/Users/zhengtianyi/miniconda3/envs/flasky/bin/python",
     "python.linting.pylintArgs": ["--load-plugins", "pylint_flask"]
 }

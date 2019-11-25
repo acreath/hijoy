@@ -89,6 +89,7 @@ class User(db.Model, UserMixin):
     
     #权限校验
     def can(self, permissions):
+        print("self.role:{} \n".format(self.role))
         print("self.role.permissions:{} \n".format(self.role.permissions))
         print("permission:{} \n".format(permissions))
         print("&:{} \n".format((self.role.permissions & permissions)))
