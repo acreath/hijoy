@@ -5,6 +5,7 @@ from flask_login import UserMixin, login_required, AnonymousUserMixin
 from . import login_manager
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer 
 from flask import current_app
+from datetime import datetime
 '''
 程序的权限
 
@@ -69,6 +70,7 @@ class Role(db.Model):
             db.session.add(role)
         db.session.commit()
 
+#增加用户资料所需要的信息
 class User(db.Model, UserMixin):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
@@ -77,7 +79,19 @@ class User(db.Model, UserMixin):
     password_hash = db.Column(db.String(128))
     email = db.Column(db.String(64), unique=True, index=True)
     confirmed = db.Column(db.Boolean, default=False)
+    #用户资料
+    name = db.Column(db.String(64))
+    location = db.Column(db.String(64))
+    about_me = db.Column(db.Text())
+    member_since = db.Column(db.DateTime(), default=datetime.utcnow)
+    last_seen = db.Column(db.DateTime(),default=datetime.utcnow)
+
     
+    #刷新用户的最后访问时间,每次收到用户请求时都要调用ping（）方法
+    def ping(self):
+        self.last_seen = datetime.utcnow()
+        db.session.add(self)
+
     #赋予用户角色：检测到系统变量中的管理员邮箱时，直接赋予管理员权限
     def __init__(self, **kwargs):
         super(User, self).__init__(**kwargs)
