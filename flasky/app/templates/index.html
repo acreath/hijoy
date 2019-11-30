@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% import "bootstrap/wtf.html" as wtf %}
-
+{% import "_macros.html" as macros %}
 {% block title %}Flasky{% endblock %}
 
 {% block page_content %} 
@@ -15,13 +15,35 @@
         Stranger 
     {% endif %}!
 </h1>
-{% if current_user.is_authenticated %}
-        <p>
-    
-            <a href="{{ url_for('auth.changepassword') }}"> Click here to change password
+
+<div>
+        {% if current_user.can(Permission.WRITE_ARTICLES) %} 
+            {{ wtf.quick_form(form) }}
+        {% endif %}
+ </div>
+ <!-- <ul class="posts">
+        {% for post in posts %} 
+        <li class="post">
+        <div class="profile-thumbnail">
+            <a href="{{ url_for('.user', username=post.author.username) }}">
+            <img class="img-rounded profile-thumbnail" src="{{ post.author.gravatar(size=40) }}">
             </a> 
-        </p> 
-{% endif %}
+        </div>
+        <div class="post-date">{{ moment(post.timestamp).fromNow() }}</div>
+        <div class="post-author">
+                <a href="{{ url_for('.user', username=post.author.username) }}">
+                             {{ post.author.username }}
+                </a> 
+        </div>
+         <div class="post-body">{{ post.body }}</div>
+        </li>
+        {% endfor %} 
+</ul> -->
+{% include '_posts.html' %}
+<div class="pagination">
+         {{ macros.pagination_widget(pagination, '.index') }}
+</div>
+
 
 
   

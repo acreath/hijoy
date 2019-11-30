@@ -48,10 +48,10 @@ def register():
     return render_template('auth/register.html', form=form)
 
 
-@auth.before_app_request#请求前校验是否用户已经验证
+@auth.before_app_request#请求前校验是否用户已经验证，更新已登陆用户的访问时间
 def before_app_request():
     if current_user.is_authenticated:
-        #current_user.ping()
+        current_user.ping()
         if not current_user.confirmed \
                 and request.endpoint \
                 and request.blueprint != 'auth' \
