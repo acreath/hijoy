@@ -6,6 +6,8 @@ from . import login_manager
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer 
 from flask import current_app
 from datetime import datetime
+import hashlib
+from flask import request
 '''
 程序的权限
 
@@ -85,13 +87,9 @@ class User(db.Model, UserMixin):
     about_me = db.Column(db.Text())
     member_since = db.Column(db.DateTime(), default=datetime.utcnow)
     last_seen = db.Column(db.DateTime(),default=datetime.utcnow)
+    avatar_hash = db.Column(db.String(32))
 
     
-    #刷新用户的最后访问时间,每次收到用户请求时都要调用ping（）方法
-    def ping(self):
-        self.last_seen = datetime.utcnow()
-        db.session.add(self)
-
     #赋予用户角色：检测到系统变量中的管理员邮箱时，直接赋予管理员权限
     def __init__(self, **kwargs):
         super(User, self).__init__(**kwargs)
@@ -100,7 +98,26 @@ class User(db.Model, UserMixin):
                 self.role = Role.query.filter_by(permissions=0xff).first()
             if self.role is None:
                 self.role = Role.query.filter_by(default=True).first()
-    
+            if self.email is not None and self.avatar_hash is None:
+                 self.avatar_hash = hashlib.md5(
+                     self.email.encode('utf-8')).hexdigest()
+    #设置头像
+    def gravatar(self, size=100, default='identicon', rating='g'):
+        if request.is_secure:
+            url = 'https://secure.gravatar.com/avatar'
+        else:
+            url = 'http://www.gravatar.com/avatar'
+        hash = self.avatar_hash or hashlib.md5(self.email.encode('utf-8')).hexdigest()
+        return '{url}/{hash}?s={size}&d={default}&r={rating}'.format(
+                 url=url, hash=hash, size=size, default=default, rating=rating)
+
+
+
+    #刷新用户的最后访问时间,每次收到用户请求时都要调用ping（）方法
+    def ping(self):
+        self.last_seen = datetime.utcnow()
+        db.session.add(self)
+
     #权限校验
     def can(self, permissions):
         print("self.role:{} \n".format(self.role))
@@ -163,6 +180,23 @@ class User(db.Model, UserMixin):
         db.session.add(user)
         return True
 
+    def change_email(self, token):
+        s = Serializer(current_app.config['SECRET_KEY'])
+        try:
+            data = s.loads(token.encode('utf-8'))
+        except:
+            return False
+        if data.get('change_email') != self.id:
+            return False
+        new_email = data.get('new_email')
+        if new_email is None:
+            return False
+        if self.query.filter_by(email=new_email).first() is not None:
+            return False
+        self.email = new_email
+        self.avatar_hash = self.gravatar_hash()
+        db.session.add(self)
+        return True
 
 
     @login_manager.user_loader
