@@ -101,7 +101,26 @@ def edit_profile_admin(id):
     form.about_me.data = user.about_me
     return render_template('edit_profile.html', form=form, user=user)
 
-
-  #
+#文章固定链接
+@main.route('/post/<int:id>')
+def post(id):
+    post = Post.query.get_or_404(id)#这个是根据id查找数据时专用的函数
+    return render_template('post.html',posts=[post])
   
-
+#编辑博客文章
+@main.route('/edit/<int:id>',methods=['GET','POST'])
+@login_required
+def edit(id):
+    post = Post.query.get_or_404(id)
+    #如果这个用户既不是博客的作者也不是管理员
+    if current_user.id != post.author_id and\
+            not current_user.can(Permission.ADMINISTER):
+        abort(403)
+    form = PostForm()
+    if form.validate_on_submit():
+        post.body = form.body.data
+        db.session.add(post)
+        flash('The post has been update.')
+        return redirect(url_for('.post', id=post.id))#回顾一下redirect函数
+    form.body.data = post.body#用户刷新页面时，不会出发post请求，使用get请求加载原有的内容
+    return render_template('edit_post.html',form=form)

@@ -3,6 +3,9 @@
 {% import "_macros.html" as macros %}
 {% block title %}Flasky{% endblock %}
 
+{% block scripts %}
+{{ super() }}
+{{ pagedown.include_pagedown() }} {% endblock %}
 {% block page_content %} 
 
 <h1>
