@@ -93,6 +93,17 @@ class User(db.Model, UserMixin):
     #博客信息
     posts = db.relationship('Post', backref='author', lazy='dynamic')
 
+    #拆分多对多关系为多对一关系
+    followed = db.relationship('Follow',
+                                    foreign_keys=[Follow.follower_id],
+                                    backref=db.backref('follower', lazy='joined'),
+                                    lazy='dynamic',
+                                    cascade='all, delete-orphan')
+    followers = db.relationship('Follow',
+                                     foreign_keys=[Follow.followed_id],
+                                     backref=db.backref('followed', lazy='joined'),
+                                     lazy='dynamic',
+                                     cascade='all, delete-orphan')
     
     #赋予用户角色：检测到系统变量中的管理员邮箱时，直接赋予管理员权限
     def __init__(self, **kwargs):
@@ -275,3 +286,12 @@ class Post(db.Model):
                  tags=allowed_tags, strip=True))
 
 db.event.listen(Post.body, 'set', Post.on_changed_body)
+
+
+
+#关注关联表的模型
+class Follow(db.Model):
+    __tablename__ = 'follows'
+    follower_id = db.Column(db.Integer,db.ForeignKey('users.id'),primary_key=True)
+    followed_id = db.Column(db.Integer,db.ForeignKey('users.id'),primary_key=True)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
