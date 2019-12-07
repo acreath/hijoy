@@ -19,9 +19,7 @@
                 </div>
                 <div class="post-footer">
                     <!--url_for里买的第一个参数时视图函数名，第二个参数是视图函数需要的参数-->
-                    <a href="{{ url_for('.post', id=post.id) }}">
-                        <span class="label label-default">Permalink</span>
-                    </a> 
+                    
                     {% if current_user == post.author %}
                         <a href="{{ url_for('.edit', id=post.id) }}">  
                             <span class="label label-primary">Edit</span>
@@ -31,6 +29,14 @@
                             <span class="label label-danger">Edit [Admin]</span>
                         </a>
                     {% endif %}  
+                    <a href="{{ url_for('.post', id=post.id) }}">
+                            <span class="label label-default">Permalink</span>
+                        </a> 
+                    <a href="{{ url_for('.post', id=post.id) }}#comments">
+                            <span class="label label-primary">
+                                {{ post.comments.count() }} Comments
+                            </span>
+                        </a>
                 </div>
             </div>
         </li>

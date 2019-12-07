@@ -74,6 +74,14 @@ class Role(db.Model):
             db.session.add(role)
         db.session.commit()
 
+#关注关联表的模型
+class Follow(db.Model):
+    __tablename__ = 'follows'
+    follower_id = db.Column(db.Integer,db.ForeignKey('users.id'),primary_key=True)
+    followed_id = db.Column(db.Integer,db.ForeignKey('users.id'),primary_key=True)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
+
 #增加用户资料所需要的信息
 class User(db.Model, UserMixin):
     __tablename__ = 'users'
@@ -92,6 +100,10 @@ class User(db.Model, UserMixin):
     avatar_hash = db.Column(db.String(32))
     #博客信息
     posts = db.relationship('Post', backref='author', lazy='dynamic')
+
+    #评论信息
+    comments = db.relationship('Comment', backref='author', lazy='dynamic')
+
 
     #拆分多对多关系为多对一关系
     followed = db.relationship('Follow',
@@ -116,6 +128,7 @@ class User(db.Model, UserMixin):
             if self.email is not None and self.avatar_hash is None:
                  self.avatar_hash = hashlib.md5(
                      self.email.encode('utf-8')).hexdigest()
+        self.follow(self)
     #设置头像
     def gravatar(self, size=100, default='identicon', rating='g'):
         if request.is_secure:
@@ -241,7 +254,35 @@ class User(db.Model, UserMixin):
             except IntegrityError:
                 db.session.rollback()
 
-
+    #关注关系的辅助方法
+    def follow(self, user):#创建关注关系
+        if not self.is_following(user):
+            f = Follow(follower=self, followed=user)
+            db.session.add(f)
+    
+    def unfollow(self, user):#取消关注
+        f = self.followed.filter_by(followed_id=user.id).first()
+        if f:
+            db.session.delete(f)
+    
+    def is_following(self, user):#判断用户B是否被用户A关注
+        return self.followed.filter_by(followed_id=user.id).first() is not None
+    
+    def is_followed_by(self, user):#拿出这个用户B所有的关注者
+        return self.followers.filter_by(follower_id=user_id).first() is not None
+    
+    @property
+    def followed_posts(self):
+        return Post.query.join(Follow, Follow.followed_id == Post.author_id)\
+             .filter(Follow.follower_id == self.id)
+    
+    @staticmethod#用户设为自己的关注者
+    def add_self_follows():
+        for user in User.query.all():
+            if not user.is_following(user):
+                user.follow(user)
+                db.session.add(user)
+                db.session.commit()
 
 class AnonymousUser(AnonymousUserMixin):
     def can(self, permissions):
@@ -260,6 +301,7 @@ class Post(db.Model):
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     author_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     body_html = db.Column(db.Text)
+    comments = db.relationship('Comment', backref='post', lazy='dynamic')
 
     #随机生成虚拟博客
     @staticmethod
@@ -289,9 +331,23 @@ db.event.listen(Post.body, 'set', Post.on_changed_body)
 
 
 
-#关注关联表的模型
-class Follow(db.Model):
-    __tablename__ = 'follows'
-    follower_id = db.Column(db.Integer,db.ForeignKey('users.id'),primary_key=True)
-    followed_id = db.Column(db.Integer,db.ForeignKey('users.id'),primary_key=True)
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+#评论模型
+class Comment(db.Model):
+    __tablename__ = 'comments'
+    id = db.Column(db.Integer, primary_key=True)
+    body = db.Column(db.Text)
+    body_html = db.Column(db.Text)
+    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+    disabled = db.Column(db.Boolean)
+    author_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    post_id = db.Column(db.Integer, db.ForeignKey('posts.id'))
+
+    #过滤markdown提交时的标签
+    @staticmethod
+    def on_changed_body(target, value, oldvalue, initiator):
+        allowed_tags = ['a', 'abbr', 'acronym', 'b', 'code', 'em', 'i',
+                             'strong']
+        target.body_html = bleach.linkify(bleach.clean(
+                 markdown(value, output_format='html'),
+                 tags=allowed_tags, strip=True))
+db.event.listen(Comment.body, 'set', Comment.on_changed_body)
