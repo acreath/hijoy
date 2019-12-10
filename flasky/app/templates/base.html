@@ -1,6 +1,6 @@
 {% extends "bootstrap/base.html" %}
 
-{% block title %}Flasky{% endblock %}
+{% block title %}Return-OH{% endblock %}
 {% block head %}
 {{ super() }}
 <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
@@ -24,20 +24,26 @@
             <span class="icon-bar"></span> 
             <span class="icon-bar"></span>
             </button>
-            <a class="navbar-brand" href="/">Flasky</a>
+            <a class="navbar-brand" href="/">Return-OH</a>
         </div>
         <div class="navbar-collapse collapse"> 
             <ul class="nav navbar-nav">
-                <li><a href="/">Home</a></li> 
+                <li><a href="/">Posts</a></li> 
             </ul>
             <ul class="nav navbar-nav navbar-right">
                 {% if current_user.can(Permission.MODERATE_COMMENTS) %}
-                <li><a href="{{ url_for('main.moderate') }}">Moderate Comments</a></li> 
+                <li>
+                    <a href="{{ url_for('main.moderate') }}">Moderate Comments</a>
+                </li> 
                 {% endif %}
                 {% if current_user.is_authenticated %}
-                <li><a href="{{ url_for('auth.logout') }}">Sign Out</a></li> 
+                <li>
+                    <a href="{{ url_for('auth.logout') }}">Sign Out</a>
+                </li> 
                 {% else %}
-                <li><a href="{{ url_for('auth.login') }}">Sign In</a></li> 
+                <li>
+                    <a href="{{ url_for('auth.login') }}">Sign In</a>
+                </li> 
                 {% endif %}
                 {% if current_user.is_authenticated %} 
                 <li>
