@@ -8,7 +8,7 @@ def page_not_found(e):
                  not request.accept_mimetypes.accept_html:
         response = jsonify({'error': 'not found'})
         response.status_code = 404
-        eturn response
+        return response
     return render_template('404.html'), 404
 
 @main.app_errorhandler(500)
@@ -17,7 +17,7 @@ def internal_server_error(e):
                  not request.accept_mimetypes.accept_html:
         response = jsonify({'error': 'Internal server error'})
         response.status_code = 500
-        eturn response
+        return response
     return render_template('500.htnl'), 500
 
 

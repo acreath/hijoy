@@ -10,6 +10,7 @@ import hashlib
 from flask import request
 from markdown import markdown
 import bleach
+from app.exceptions import ValidationError
 '''
 程序的权限
 
@@ -129,6 +130,26 @@ class User(db.Model, UserMixin):
                  self.avatar_hash = hashlib.md5(
                      self.email.encode('utf-8')).hexdigest()
         self.follow(self)
+    
+
+    #支持基于令牌的认证
+    #生成令牌
+    def generate_auth_token(self, expiration):
+        s = Serializer(current_app.config['SECRET_KEY'],
+        expires_in=expiration) 
+        return s.dumps({'id': self.id})
+    
+    #验证令牌
+    @staticmethod
+    def verify_auth_token(token):
+        s = Serializer(current_app.config['SECRET_KEY']) 
+        try:
+            data = s.loads(token) 
+        except:
+            return None
+        return User.query.get(data['id'])
+    
+    
     #设置头像
     def gravatar(self, size=100, default='identicon', rating='g'):
         if request.is_secure:
@@ -283,6 +304,20 @@ class User(db.Model, UserMixin):
                 user.follow(user)
                 db.session.add(user)
                 db.session.commit()
+    
+    
+    #把用户转化为json 格式的序列化字典
+    def to_json(self): 
+        json_user = {
+            'url': url_for('api.get_post', id=self.id, _external=True), 'username': self.username,
+            'member_since': self.member_since,
+            'last_seen': self.last_seen,
+            'posts': url_for('api.get_user_posts', id=self.id, _external=True), 'followed_posts': url_for('api.get_user_followed_posts',
+            id=self.id, _external=True), 'post_count': self.posts.count()
+            }
+        return json_user
+
+
 
 class AnonymousUser(AnonymousUserMixin):
     def can(self, permissions):
@@ -326,6 +361,29 @@ class Post(db.Model):
         target.body_html = bleach.linkify(bleach.clean(
                  markdown(value, output_format='html'),
                  tags=allowed_tags, strip=True))
+
+    #把博客文章转化成序列化的 json 字典
+    def to_json(self):
+        json_post = {
+        'url': url_for('api.get_post', id=self.id, _external=True), 'body': self.body,
+        'body_html': self.body_html,
+        'timestamp': self.timestamp,
+        'author': url_for('api.get_user', id=self.author_id,
+        _external=True),
+        'comments': url_for('api.get_post_comments', id=self.id,
+        _external=True),
+        'comment_count': self.comments.count()
+        }
+        return json_post
+
+    #从 json 格式创建一篇博客实例
+    @staticmethod
+    def from_json(json_post):
+        body = json_post.get('body') 
+        if body is None or body == '':
+            raise ValidationError('post does not have a body')
+        return Post(body=body)
+
 
 db.event.listen(Post.body, 'set', Post.on_changed_body)
 
