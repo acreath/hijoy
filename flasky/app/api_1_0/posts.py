@@ -19,7 +19,8 @@ def get_posts():
     if pagination.has_next:
         next = url_for('api.get_posts', page=page+1, _external=True)
     return jsonify({
-        'posts': [post.to_json() for post in posts], 'prev': prev,
+        'posts': [post.to_json() for post in posts], 
+        'prev': prev,
         'next': next,
         'count': pagination.total
         })
@@ -52,4 +53,5 @@ def edit_post(id):
         return forbidden('Insufficient permissions')
     post.body = request.json.get('body', post.body) 
     db.session.add(post)
+    db.session.commit()
     return jsonify(post.to_json())

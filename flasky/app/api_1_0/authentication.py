@@ -4,7 +4,8 @@ from ..models import User,AnonymousUser
 from . import api
 from .errors import unauthorized, forbidden
 
-
+#先创建一个对象，由于这种用户认证方法只在API蓝本中使用，
+# 所以只需要在蓝本包中初始化
 auth = HTTPBasicAuth()
 
 
@@ -13,7 +14,7 @@ def verify_password(email_or_token, password):
     if email_or_token == '':
         g.current_user = AnonymousUser() 
         return True
-        #return False
+        
     if password == '':
         g.current_user = User.verify_auth_token(email_or_token)
         g.token_used = True
@@ -26,11 +27,13 @@ def verify_password(email_or_token, password):
     return user.verify_password(password)
 
 
+#本来是自动生产401，为了和 API 返回的其他错误保持一致，我们可以自定义这个错误响应
 @auth.error_handler
 def auth_error():
     return unauthorized('Invalid credentials')
 
 
+#如果现在的用户是匿名用户与和没有认证
 @api.before_request
 @auth.login_required
 def before_request():
@@ -39,6 +42,7 @@ def before_request():
         return forbidden('Unconfirmed account')
 
 
+#生成认证令牌
 @api.route('/tokens/', methods=['POST'])
 def get_token():
     if g.current_user.is_anonymous or g.token_used:

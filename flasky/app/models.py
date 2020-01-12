@@ -7,7 +7,7 @@ from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from flask import current_app
 from datetime import datetime
 import hashlib
-from flask import request
+from flask import request, url_for
 from markdown import markdown
 import bleach
 from app.exceptions import ValidationError
@@ -136,7 +136,7 @@ class User(db.Model, UserMixin):
     #生成令牌
     def generate_auth_token(self, expiration):
         s = Serializer(current_app.config['SECRET_KEY'],
-        expires_in=expiration) 
+                                    expires_in=expiration) 
         return s.dumps({'id': self.id})
     
     #验证令牌
@@ -309,11 +309,14 @@ class User(db.Model, UserMixin):
     #把用户转化为json 格式的序列化字典
     def to_json(self): 
         json_user = {
-            'url': url_for('api.get_post', id=self.id, _external=True), 'username': self.username,
+            'url': url_for('api.get_post', id=self.id, _external=True), 
+            'username': self.username,
             'member_since': self.member_since,
             'last_seen': self.last_seen,
-            'posts': url_for('api.get_user_posts', id=self.id, _external=True), 'followed_posts': url_for('api.get_user_followed_posts',
-            id=self.id, _external=True), 'post_count': self.posts.count()
+            'posts': url_for('api.get_user_posts', id=self.id, _external=True), 
+            'followed_posts': url_for('api.get_user_followed_posts',
+                                            id=self.id, _external=True), 
+            'post_count': self.posts.count()
             }
         return json_user
 
@@ -353,6 +356,8 @@ class Post(db.Model):
                           author=u)
             db.session.add(p)
             db.session.commit()
+
+
     @staticmethod
     def on_changed_body(target, value, oldvalue, initiator):
         allowed_tags = ['a', 'abbr', 'acronym', 'b', 'blockquote', 'code',
@@ -362,7 +367,7 @@ class Post(db.Model):
                  markdown(value, output_format='html'),
                  tags=allowed_tags, strip=True))
 
-    #把博客文章转化成序列化的 json 字典
+    #把博客文章转化成序列化的 json 字典，作为响应
     def to_json(self):
         json_post = {
         'url': url_for('api.get_post', id=self.id, _external=True), 'body': self.body,
@@ -376,7 +381,7 @@ class Post(db.Model):
         }
         return json_post
 
-    #从 json 格式创建一篇博客实例
+    #从 json 格式创建一篇博客实例，存入数据库
     @staticmethod
     def from_json(json_post):
         body = json_post.get('body') 
