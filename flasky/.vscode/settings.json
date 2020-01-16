@@ -1,5 +1,14 @@
 {
     
     "python.pythonPath": "/Users/zhengtianyi/miniconda3/envs/flasky/bin/python",
-    "python.linting.pylintArgs": ["--load-plugins", "pylint_flask"]
+    "python.linting.pylintArgs": [
+        "--load-plugins",
+        "pylint_flask"
+    ],
+    "python.testing.pytestArgs": [
+        "."
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.nosetestsEnabled": false,
+    "python.testing.pytestEnabled": true
 }
