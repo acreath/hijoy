@@ -384,7 +384,8 @@ class Post(db.Model):
     #从 json 格式创建一篇博客实例，存入数据库
     @staticmethod
     def from_json(json_post):
-        body = json_post.get('body') 
+        body = json_post.get('body')
+        print(body) 
         if body is None or body == '':
             raise ValidationError('post does not have a body')
         return Post(body=body)
