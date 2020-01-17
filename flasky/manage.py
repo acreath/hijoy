@@ -71,5 +71,6 @@ def deploy():
     # 让所有用户都关注此用户 
     User.add_self_follows()
 
-#if __name__ == '__main__': 
-    #manager.run()
+if __name__ == '__main__': 
+    #app.run()
+    manager.run()
