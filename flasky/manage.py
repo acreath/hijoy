@@ -72,4 +72,4 @@ def deploy():
     User.add_self_follows()
 
 if __name__ == '__main__': 
-    manager.run()
+    #manager.run()
